@@ -16,11 +16,53 @@ namespace RefaccionariaApp.Forms
     /// </summary>
     public class FormPartes : FormListaBase
     {
+        private readonly PanelDetalleParte _panelDetalle = new PanelDetalleParte();
+        private DataGridView _grid;
+
         public FormPartes() : base("Partes (refacciones)")
         {
             Width = 1000;
             Height = 620;
             StartPosition = FormStartPosition.CenterScreen;
+
+            _panelDetalle.CerrarClick += (s, e) => _panelDetalle.Ocultar();
+            Controls.Add(_panelDetalle);
+            _panelDetalle.SendToBack(); // se acopla primero al borde derecho
+        }
+
+        protected override void OnShown(EventArgs e)
+        {
+            base.OnShown(e);
+            _grid = BuscarGrid(this);
+            if (_grid == null) return;
+
+            _grid.CellClick += (s, ev) =>
+            {
+                if (ev.RowIndex >= 0) MostrarDetalle();
+            };
+            _grid.SelectionChanged += (s, ev) =>
+            {
+                if (_panelDetalle.Visible) MostrarDetalle(); // navegación con teclado / nueva búsqueda
+            };
+        }
+
+        private void MostrarDetalle()
+        {
+            if (_grid.CurrentRow?.DataBoundItem is DataRowView fila)
+                _panelDetalle.Mostrar(fila);
+            else
+                _panelDetalle.Ocultar();
+        }
+
+        private static DataGridView BuscarGrid(Control padre)
+        {
+            foreach (Control c in padre.Controls)
+            {
+                if (c is DataGridView g) return g;
+                DataGridView hijo = BuscarGrid(c);
+                if (hijo != null) return hijo;
+            }
+            return null;
         }
 
         protected override bool BusquedaEnServidor => true;
