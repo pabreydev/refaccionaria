@@ -13,7 +13,7 @@ namespace RefaccionariaApp.Data
         //  - Instancia local por defecto:      "Data Source=.;Initial Catalog=Refaccionaria;Integrated Security=True;TrustServerCertificate=True"
         //  - Instancia SQLEXPRESS (la que generó el script original):
         public static string ConnectionString =
-            @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=Refaccionaria;Integrated Security=True;Pooling=False;Connect Timeout=30;TrustServerCertificate=True";
+            @"Data Source=localhost\SQLEXPRESS;Initial Catalog=Refaccionaria;Integrated Security=True;Pooling=False;Connect Timeout=30;TrustServerCertificate=True";
 
         public static SqlConnection ObtenerConexion() => new SqlConnection(ConnectionString);
     }
