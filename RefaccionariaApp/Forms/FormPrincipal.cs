@@ -34,16 +34,43 @@ namespace RefaccionariaApp.Forms
             var panelLogo = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = Tema.SidebarFondo };
             var lblLogo = new Label
             {
-                Text = "REFACCIONARIA",
+                Text = "MANGUERAS Y REFACCIONES",
                 Dock = DockStyle.Fill,
                 ForeColor = Tema.Blanco,
                 Font = new Font("Segoe UI Semibold", 13F),
-                TextAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleCenter,
                 Padding = new Padding(20, 0, 0, 0)
             };
             var barraAcento = new Panel { Dock = DockStyle.Left, Width = 5, BackColor = Tema.Acento };
             panelLogo.Controls.Add(lblLogo);
             panelLogo.Controls.Add(barraAcento);
+
+            // ---------- Logo (imagen) ----------
+            var picLogo = new PictureBox
+            {
+                Dock = DockStyle.Top,
+                Height = 70,
+                BackColor = Tema.Blanco,          // el JPEG tiene fondo blanco
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Padding = new Padding(8)
+            };
+
+            try
+            {
+                string ruta = System.IO.Path.Combine(Application.StartupPath, "Imagenes", "logo.jpeg");
+                if (System.IO.File.Exists(ruta))
+                {
+                    // Se carga desde un stream para no dejar el archivo bloqueado.
+                    using (var fs = new System.IO.FileStream(ruta, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                    using (var img = Image.FromStream(fs))
+                        picLogo.Image = new Bitmap(img);
+                }
+            }
+            catch { /* si falla la imagen, el shell sigue funcionando con el texto */ }
+
+
+
+
 
             flpNav = new FlowLayoutPanel
             {
@@ -72,6 +99,7 @@ namespace RefaccionariaApp.Forms
 
             sidebar.Controls.Add(flpNav);
             sidebar.Controls.Add(panelLogo);
+            sidebar.Controls.Add(picLogo);
 
             // ---------- Contenido ----------
             var contenido = new Panel { Dock = DockStyle.Fill, BackColor = Tema.Fondo };
