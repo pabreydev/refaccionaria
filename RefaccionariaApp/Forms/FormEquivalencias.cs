@@ -18,6 +18,7 @@ namespace RefaccionariaApp.Forms
     {
         private readonly int idParte;
         private readonly DataGridView dgv = new() { Dock = DockStyle.Fill, ReadOnly = true, AllowUserToAddRows = false, SelectionMode = DataGridViewSelectionMode.FullRowSelect, MultiSelect = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
+        private readonly Paginador paginador;
         private readonly ComboBox cmbParte = new() { DropDownStyle = ComboBoxStyle.DropDownList, Left = 10, Top = 12, Width = 400 };
 
         public FormEquivalencias(int idParte, string nombreParte)
@@ -31,6 +32,7 @@ namespace RefaccionariaApp.Forms
             BackColor = Tema.Blanco;
 
             Tema.EstilizarGrid(dgv);
+            paginador = new Paginador(dgv, 25);
 
             var panelSuperior = new Panel { Dock = DockStyle.Top, Height = 56, Padding = new Padding(12), BackColor = Tema.Blanco };
             cmbParte.Top = 14;
@@ -51,10 +53,11 @@ namespace RefaccionariaApp.Forms
             panelInferior.Controls.Add(btnCerrar);
 
             Controls.Add(dgv);
+            Controls.Add(paginador);
             Controls.Add(panelInferior);
             Controls.Add(panelSuperior);
 
-            Load += (s, e) => { CargarComboPartes(); CargarEquivalencias(); };
+            Load += (s, e) => { CargarComboPartes(); CargarEquivalencias(conservarPagina: false); };
         }
 
         private void CargarComboPartes()
@@ -66,9 +69,9 @@ namespace RefaccionariaApp.Forms
             cmbParte.ValueMember = "id_parte";
         }
 
-        private void CargarEquivalencias()
+        private void CargarEquivalencias(bool conservarPagina = true)
         {
-            dgv.DataSource = BD.EjecutarConsulta("spEquivalentesMostrar", new SqlParameter("@idparte", idParte));
+            paginador.Cargar(BD.EjecutarConsulta("spEquivalentesMostrar", new SqlParameter("@idparte", idParte)), conservarPagina);
         }
 
         private void Agregar()

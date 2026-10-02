@@ -11,6 +11,7 @@ namespace RefaccionariaApp.Forms
         private readonly NumericUpDown numMinimo = new() { Left = 220, Top = 12, Width = 100, Maximum = 1000000 };
         private readonly CheckBox chkFiltrar = new() { Text = "Filtrar por existencias menores o iguales a:", Left = 10, Top = 14, Width = 210 };
         private readonly DataGridView dgv = new() { Dock = DockStyle.Fill, ReadOnly = true, AllowUserToAddRows = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
+        private readonly Paginador paginador;
 
         public FormReporteExistencias()
         {
@@ -22,6 +23,7 @@ namespace RefaccionariaApp.Forms
             BackColor = Tema.Blanco;
 
             Tema.EstilizarGrid(dgv);
+            paginador = new Paginador(dgv);
 
             var panelSuperior = new Panel { Dock = DockStyle.Top, Height = 56, Padding = new Padding(12), BackColor = Tema.Blanco };
             chkFiltrar.Top = 16;
@@ -34,6 +36,7 @@ namespace RefaccionariaApp.Forms
             panelSuperior.Controls.Add(btnConsultar);
 
             Controls.Add(dgv);
+            Controls.Add(paginador);
             Controls.Add(panelSuperior);
 
             Load += (s, e) => Consultar();
@@ -41,8 +44,8 @@ namespace RefaccionariaApp.Forms
 
         private void Consultar()
         {
-            dgv.DataSource = BD.EjecutarConsulta("spReporteExistencias",
-                new SqlParameter("@existenciasMinimas", chkFiltrar.Checked ? (object)(int)numMinimo.Value : DBNull.Value));
+            paginador.Cargar(BD.EjecutarConsulta("spReporteExistencias",
+                new SqlParameter("@existenciasMinimas", chkFiltrar.Checked ? (object)(int)numMinimo.Value : DBNull.Value)));
         }
     }
 }

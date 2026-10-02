@@ -20,12 +20,15 @@ namespace RefaccionariaApp.Forms
     /// servidor (ver <see cref="BusquedaEnServidor"/>): en ese caso cada cambio
     /// del texto re-consulta la base (con un pequeño retraso para no golpearla
     /// en cada tecla) llamando a <see cref="ObtenerDatos(string)"/>.
+    ///
+    /// La grilla se pagina en cliente con <see cref="Paginador"/>; el filtro
+    /// y el orden por columna aplican sobre todos los registros.
     /// </summary>
     public abstract class FormListaBase : Form
     {
         protected DataGridView dgv;
         private readonly TextBox txtBuscar;
-        private readonly BindingSource bs = new BindingSource();
+        private readonly Paginador paginador;
         private readonly Button btnNuevo, btnEditar, btnEliminar;
         private readonly System.Windows.Forms.Timer debounceBusqueda;
 
@@ -48,7 +51,7 @@ namespace RefaccionariaApp.Forms
             // Debounce para la búsqueda en servidor: espera a que el usuario deje
             // de teclear antes de re-consultar la base.
             debounceBusqueda = new System.Windows.Forms.Timer { Interval = 250 };
-            debounceBusqueda.Tick += (s, e) => { debounceBusqueda.Stop(); RecargarDatos(); };
+            debounceBusqueda.Tick += (s, e) => { debounceBusqueda.Stop(); RecargarDatos(conservarPagina: false); };
 
             // --- Grilla (centro) ---
             dgv = new DataGridView
@@ -63,6 +66,7 @@ namespace RefaccionariaApp.Forms
             };
             Tema.EstilizarGrid(dgv);
             dgv.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) EditarSeleccionado(); };
+            paginador = new Paginador(dgv);
 
             // --- Botones (abajo) ---
             var panelBotones = new Panel { Dock = DockStyle.Bottom, Height = 56, Padding = new Padding(12, 0, 12, 0), BackColor = Tema.Blanco };
@@ -81,22 +85,24 @@ namespace RefaccionariaApp.Forms
 
             // Orden de agregado: primero Fill, luego Bottom/Top para que el docking se respete.
             Controls.Add(dgv);
+            Controls.Add(paginador);
             Controls.Add(panelBotones);
             Controls.Add(panelBusqueda);
 
-            Load += (s, e) => RecargarDatos();
+            Load += (s, e) => RecargarDatos(conservarPagina: false);
         }
 
-        /// <summary>Recarga la grilla desde la fuente de datos y reaplica el filtro actual.</summary>
-        protected void RecargarDatos()
+        /// <summary>
+        /// Recarga la grilla desde la fuente de datos conservando el filtro y el
+        /// orden actuales. Con <paramref name="conservarPagina"/> (p. ej. tras
+        /// editar o eliminar) se queda en la página en la que estaba el usuario.
+        /// </summary>
+        protected void RecargarDatos(bool conservarPagina = true)
         {
-            bs.Filter = null;
-            bs.DataSource = BusquedaEnServidor
+            paginador.Cargar(BusquedaEnServidor
                 ? ObtenerDatos(txtBuscar.Text.Trim())
-                : ObtenerDatos();
-            dgv.DataSource = bs;
+                : ObtenerDatos(), conservarPagina);
             OcultarColumnas();
-            if (!BusquedaEnServidor) AplicarFiltroCliente();
         }
 
         private void OnBusquedaCambio()
@@ -122,10 +128,10 @@ namespace RefaccionariaApp.Forms
 
         private void AplicarFiltroCliente()
         {
-            if (bs.DataSource is not DataTable dt) return;
+            if (paginador.Datos is not DataTable dt) return;
 
             var texto = txtBuscar.Text.Trim();
-            if (texto.Length == 0) { bs.Filter = null; return; }
+            if (texto.Length == 0) { paginador.Filtro = null; return; }
 
             var columnas = ColumnasBusqueda
                 ?? dt.Columns.Cast<DataColumn>()
@@ -133,10 +139,10 @@ namespace RefaccionariaApp.Forms
                      .Select(c => c.ColumnName)
                      .ToArray();
 
-            if (columnas.Length == 0) { bs.Filter = null; return; }
+            if (columnas.Length == 0) { paginador.Filtro = null; return; }
 
             var t = EscaparLike(texto);
-            bs.Filter = string.Join(" OR ",
+            paginador.Filtro = string.Join(" OR ",
                 columnas.Select(c => $"CONVERT([{c}], 'System.String') LIKE '%{t}%'"));
         }
 

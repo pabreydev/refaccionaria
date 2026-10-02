@@ -16,7 +16,8 @@ namespace RefaccionariaApp.Forms
     {
         private readonly DataGridView dgvCotizaciones = new() { Dock = DockStyle.Fill, ReadOnly = true, AllowUserToAddRows = false, SelectionMode = DataGridViewSelectionMode.FullRowSelect, MultiSelect = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
         private readonly DataGridView dgvDetalle = new() { Dock = DockStyle.Fill, ReadOnly = true, AllowUserToAddRows = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
-        private readonly BindingSource bsCotizaciones = new();
+        private readonly Paginador pagCotizaciones;
+        private readonly Paginador pagDetalle;
         private readonly TextBox txtBuscar = new() { Left = 70, Top = 11, Width = 300 };
 
         public FormCotizaciones()
@@ -30,6 +31,8 @@ namespace RefaccionariaApp.Forms
 
             Tema.EstilizarGrid(dgvCotizaciones);
             Tema.EstilizarGrid(dgvDetalle);
+            pagCotizaciones = new Paginador(dgvCotizaciones);
+            pagDetalle = new Paginador(dgvDetalle, 25);
 
             var panelSuperior = new Panel { Dock = DockStyle.Top, Height = 56, Padding = new Padding(12), BackColor = Tema.Blanco };
             txtBuscar.Left = 12; txtBuscar.Top = 14; txtBuscar.Width = 360;
@@ -53,42 +56,42 @@ namespace RefaccionariaApp.Forms
 
             var splitPrincipal = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, SplitterDistance = 320 };
             splitPrincipal.Panel1.Controls.Add(dgvCotizaciones);
+            splitPrincipal.Panel1.Controls.Add(pagCotizaciones);
             var lblDetalle = new Label { Text = "Detalle de la cotización seleccionada:", Dock = DockStyle.Top, Height = 26, Padding = new Padding(5, 6, 0, 0), ForeColor = Tema.TextoSecundario, BackColor = Tema.Blanco };
             splitPrincipal.Panel2.Controls.Add(dgvDetalle);
+            splitPrincipal.Panel2.Controls.Add(pagDetalle);
             splitPrincipal.Panel2.Controls.Add(lblDetalle);
 
             Controls.Add(splitPrincipal);
             Controls.Add(panelInferior);
             Controls.Add(panelSuperior);
 
-            dgvCotizaciones.DataSource = bsCotizaciones;
             dgvCotizaciones.SelectionChanged += (s, e) => CargarDetalle();
             dgvCotizaciones.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) EditarSeleccionada(); };
 
-            Load += (s, e) => CargarTodas();
+            Load += (s, e) => CargarTodas(conservarPagina: false);
         }
 
-        private void CargarTodas()
+        /// <summary>Recarga las cotizaciones conservando filtro, orden y (por defecto) la página.</summary>
+        private void CargarTodas(bool conservarPagina = true)
         {
-            bsCotizaciones.Filter = null;
-            bsCotizaciones.DataSource = BD.EjecutarConsulta("spCotizacionesConsulta");
-            AplicarFiltro();
+            pagCotizaciones.Cargar(BD.EjecutarConsulta("spCotizacionesConsulta"), conservarPagina);
         }
 
         private void AplicarFiltro()
         {
-            if (bsCotizaciones.DataSource is not DataTable) return;
+            if (pagCotizaciones.Datos == null) return;
             var texto = txtBuscar.Text.Trim().Replace("'", "''");
-            bsCotizaciones.Filter = string.IsNullOrEmpty(texto)
+            pagCotizaciones.Filtro = string.IsNullOrEmpty(texto)
                 ? null
                 : $"cliente LIKE '%{texto}%' OR CONVERT(folio, 'System.String') LIKE '%{texto}%'";
         }
 
         private void CargarDetalle()
         {
-            if (dgvCotizaciones.CurrentRow?.DataBoundItem is not DataRowView drv) { dgvDetalle.DataSource = null; return; }
+            if (dgvCotizaciones.CurrentRow?.DataBoundItem is not DataRowView drv) { pagDetalle.Cargar(null); return; }
             var folio = Convert.ToInt32(drv["folio"]);
-            dgvDetalle.DataSource = BD.EjecutarConsulta("spCotizacionDetalleMostrar", new SqlParameter("@folio_cotizacion", folio));
+            pagDetalle.Cargar(BD.EjecutarConsulta("spCotizacionDetalleMostrar", new SqlParameter("@folio_cotizacion", folio)));
         }
 
         private int? FolioSeleccionado()
