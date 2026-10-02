@@ -37,9 +37,10 @@ namespace RefaccionariaApp.Forms
         private readonly NumericUpDown numDescuento = new() { Left = 510, Top = 45, Width = 70, Minimum = 0, Maximum = 100, DecimalPlaces = 2 };
         private readonly BindingList<LineaDetalle> lineas = new();
         private readonly DataGridView dgv = new() { Dock = DockStyle.Fill, ReadOnly = true, AllowUserToAddRows = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
-        private readonly Label lblSubtotal = new() { Left = 600, Top = 8, Width = 200, TextAlign = ContentAlignment.MiddleRight };
-        private readonly Label lblIva = new() { Left = 600, Top = 26, Width = 200, TextAlign = ContentAlignment.MiddleRight };
-        private readonly Label lblTotal = new() { Left = 600, Top = 44, Width = 200, Font = new Font("Segoe UI", 9F, FontStyle.Bold), TextAlign = ContentAlignment.MiddleRight };
+        // Importes del área de totales (solo el monto; el concepto va en otra etiqueta).
+        private readonly Label lblSubtotal = NuevaEtiquetaImporte(false);
+        private readonly Label lblIva = NuevaEtiquetaImporte(false);
+        private readonly Label lblTotal = NuevaEtiquetaImporte(true);
 
         public FormCotizacionNueva(int? folio = null)
         {
@@ -69,10 +70,22 @@ namespace RefaccionariaApp.Forms
             btnAgregar.Click += (s, e) => AgregarLinea();
             panelSuperior.Controls.Add(btnAgregar);
 
-            var panelTotales = new Panel { Dock = DockStyle.Right, Width = 220 };
-            panelTotales.Controls.Add(lblSubtotal);
-            panelTotales.Controls.Add(lblIva);
-            panelTotales.Controls.Add(lblTotal);
+            // --- Totales (abajo del grid, alineados a la derecha) ---
+            var panelTotales = new Panel { Dock = DockStyle.Bottom, Height = 104, Padding = new Padding(10, 8, 20, 8), BackColor = Tema.Fondo };
+            var tablaTotales = new TableLayoutPanel { Dock = DockStyle.Right, Width = 300, ColumnCount = 2, RowCount = 3 };
+            tablaTotales.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45));
+            tablaTotales.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55));
+            tablaTotales.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
+            tablaTotales.RowStyles.Add(new RowStyle(SizeType.Percent, 30));
+            tablaTotales.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
+            tablaTotales.Controls.Add(NuevaEtiquetaConcepto("Subtotal:", false), 0, 0);
+            tablaTotales.Controls.Add(lblSubtotal, 1, 0);
+            tablaTotales.Controls.Add(NuevaEtiquetaConcepto("IVA (16%):", false), 0, 1);
+            tablaTotales.Controls.Add(lblIva, 1, 1);
+            tablaTotales.Controls.Add(NuevaEtiquetaConcepto("Total:", true), 0, 2);
+            tablaTotales.Controls.Add(lblTotal, 1, 2);
+            panelTotales.Controls.Add(tablaTotales);
+            panelTotales.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 1, BackColor = Tema.Borde });
 
             var panelInferior = new Panel { Dock = DockStyle.Bottom, Height = 56, Padding = new Padding(10, 0, 10, 0), BackColor = Tema.Blanco };
             var btnQuitarLinea = new Button { Text = "Quitar línea", Left = 10, Top = 11, Width = 110 };
@@ -90,11 +103,10 @@ namespace RefaccionariaApp.Forms
 
             dgv.DataSource = lineas;
 
-            var panelDgvYTotales = new Panel { Dock = DockStyle.Fill };
-            panelDgvYTotales.Controls.Add(dgv);
-            panelDgvYTotales.Controls.Add(panelTotales);
-
-            Controls.Add(panelDgvYTotales);
+            // Orden: Fill primero; panelInferior se agrega después de panelTotales
+            // para quedar hasta abajo, con los totales justo arriba de los botones.
+            Controls.Add(dgv);
+            Controls.Add(panelTotales);
             Controls.Add(panelInferior);
             Controls.Add(panelSuperior);
 
@@ -160,10 +172,27 @@ namespace RefaccionariaApp.Forms
             var subtotal = lineas.Sum(l => l.Subtotal);
             var iva = Math.Round(subtotal * 0.16m, 2);
             var total = subtotal + iva;
-            lblSubtotal.Text = $"Subtotal: {subtotal:C2}";
-            lblIva.Text = $"IVA (16%): {iva:C2}";
-            lblTotal.Text = $"Total: {total:C2}";
+            lblSubtotal.Text = subtotal.ToString("C2");
+            lblIva.Text = iva.ToString("C2");
+            lblTotal.Text = total.ToString("C2");
         }
+
+        private static Label NuevaEtiquetaConcepto(string texto, bool esTotal) => new()
+        {
+            Text = texto,
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleRight,
+            ForeColor = esTotal ? Tema.TextoPrimario : Tema.TextoSecundario,
+            Font = esTotal ? new Font("Segoe UI", 12F, FontStyle.Bold) : new Font("Segoe UI", 10F)
+        };
+
+        private static Label NuevaEtiquetaImporte(bool esTotal) => new()
+        {
+            Dock = DockStyle.Fill,
+            TextAlign = ContentAlignment.MiddleRight,
+            ForeColor = esTotal ? Tema.Acento : Tema.TextoPrimario,
+            Font = esTotal ? new Font("Segoe UI", 12F, FontStyle.Bold) : new Font("Segoe UI", 10F)
+        };
 
         private void GuardarCotizacion()
         {
