@@ -39,6 +39,7 @@ RefaccionariaApp/
     Tema.cs                   Paleta y helpers de estilo (acento turquesa, grids/botones planos)
     FormListaBase.cs          Base de listado: grid + buscador incremental + Nuevo/Editar/Eliminar
     FormEdicionBase.cs        Base del modal de alta/edición (Guardar/Cancelar)
+    Paginador.cs              Barra de paginación reutilizable para los grids
     FormMarcas.cs             + FormMarcaEdicion.cs (modal)
     FormAnios.cs              + FormAnioEdicion.cs
     FormProveedores.cs        + FormProveedorEdicion.cs
