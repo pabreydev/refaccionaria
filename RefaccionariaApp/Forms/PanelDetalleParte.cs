@@ -26,7 +26,7 @@ namespace RefaccionariaApp.Forms
         {
             Dock = DockStyle.Right;
             Width = AnchoPanel;
-            BackColor = Color.White;
+            BackColor = Tema.Blanco;
             Visible = false;
 
             // Contenedor con scroll para los campos
@@ -46,21 +46,21 @@ namespace RefaccionariaApp.Forms
             _imagen.Dock = DockStyle.Top;
             _imagen.Height = 220;
             _imagen.SizeMode = PictureBoxSizeMode.Zoom;
-            _imagen.BackColor = Color.FromArgb(240, 240, 240);
+            _imagen.BackColor = Tema.FondoImagen;
 
             _sinImagen.Dock = DockStyle.Fill;
             _sinImagen.Text = "Sin imagen";
             _sinImagen.TextAlign = ContentAlignment.MiddleCenter;
-            _sinImagen.ForeColor = Color.Gray;
+            _sinImagen.ForeColor = Tema.TextoSecundario;
             _imagen.Controls.Add(_sinImagen);
 
             // Encabezado
             _encabezado.Dock = DockStyle.Top;
             _encabezado.Height = 40;
-            _encabezado.BackColor = Color.FromArgb(45, 45, 48);
+            _encabezado.BackColor = Tema.SidebarFondo;
 
             _titulo.Text = "Detalle de la parte";
-            _titulo.ForeColor = Color.White;
+            _titulo.ForeColor = Tema.Blanco;
             _titulo.Font = new Font(Font, FontStyle.Bold);
             _titulo.Dock = DockStyle.Fill;
             _titulo.TextAlign = ContentAlignment.MiddleLeft;
@@ -71,7 +71,8 @@ namespace RefaccionariaApp.Forms
             _btnCerrar.Width = 40;
             _btnCerrar.FlatStyle = FlatStyle.Flat;
             _btnCerrar.FlatAppearance.BorderSize = 0;
-            _btnCerrar.ForeColor = Color.White;
+            _btnCerrar.ForeColor = Tema.Blanco;
+            _btnCerrar.FlatAppearance.MouseOverBackColor = Tema.Acento;
             _btnCerrar.Cursor = Cursors.Hand;
             _btnCerrar.Click += (s, e) => CerrarClick?.Invoke(this, EventArgs.Empty);
 
@@ -147,7 +148,7 @@ namespace RefaccionariaApp.Forms
             {
                 Text = campo,
                 AutoSize = true,
-                ForeColor = Color.Gray,
+                ForeColor = Tema.TextoSecundario,
                 Font = new Font(Font, FontStyle.Bold),
                 Margin = new Padding(0, 6, 6, 6),
                 MaximumSize = new Size(104, 0)

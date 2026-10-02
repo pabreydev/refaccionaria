@@ -36,7 +36,7 @@ RefaccionariaApp/
     BD.cs                     Helper genérico para llamar SPs / SQL directo
   Forms/
     FormPrincipal.cs          Shell: barra lateral oscura + contenido embebido
-    Tema.cs                   Paleta y helpers de estilo (acento turquesa, grids/botones planos)
+    Tema.cs                   Paleta y helpers de estilo (acento rojo del logo, grids/botones planos)
     FormListaBase.cs          Base de listado: grid + buscador incremental + Nuevo/Editar/Eliminar
     FormEdicionBase.cs        Base del modal de alta/edición (Guardar/Cancelar)
     Paginador.cs              Barra de paginación reutilizable para los grids

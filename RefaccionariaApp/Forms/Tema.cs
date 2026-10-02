@@ -5,32 +5,35 @@ namespace RefaccionariaApp.Forms
 {
     /// <summary>
     /// Paleta y helpers de estilo para dar un aspecto moderno y consistente a
-    /// toda la aplicación (barra lateral oscura, acento turquesa, grids y
-    /// botones planos). Centraliza los colores para poder ajustarlos en un
-    /// solo lugar.
+    /// toda la aplicación (barra lateral oscura, acento rojo, grids y botones
+    /// planos). Los colores siguen el logotipo: rojo de las letras, negro de la
+    /// manguera y gris cromado de las conexiones. Centraliza los colores para
+    /// poder ajustarlos en un solo lugar.
     /// </summary>
     public static class Tema
     {
         // --- Paleta ---
-        public static readonly Color Acento = Color.FromArgb(0, 173, 181);       // turquesa
-        public static readonly Color AcentoHover = Color.FromArgb(0, 148, 156);
-        public static readonly Color AcentoSuave = Color.FromArgb(224, 246, 247);
+        public static readonly Color Acento = Color.FromArgb(220, 30, 38);       // rojo del logo
+        public static readonly Color AcentoHover = Color.FromArgb(180, 20, 28);
+        public static readonly Color AcentoSuave = Color.FromArgb(252, 228, 229);
 
-        public static readonly Color SidebarFondo = Color.FromArgb(24, 28, 36);
-        public static readonly Color SidebarHover = Color.FromArgb(38, 44, 56);
-        public static readonly Color SidebarActivo = Color.FromArgb(31, 37, 48);
-        public static readonly Color SidebarTexto = Color.FromArgb(201, 206, 215);
-        public static readonly Color SidebarTextoTenue = Color.FromArgb(122, 130, 143);
+        public static readonly Color SidebarFondo = Color.FromArgb(22, 22, 24);  // negro de la manguera
+        public static readonly Color SidebarHover = Color.FromArgb(44, 44, 48);
+        public static readonly Color SidebarActivo = Color.FromArgb(34, 34, 37);
+        public static readonly Color SidebarTexto = Color.FromArgb(214, 216, 219); // gris cromado
+        public static readonly Color SidebarTextoTenue = Color.FromArgb(138, 141, 146);
 
-        public static readonly Color Fondo = Color.FromArgb(245, 246, 248);
+        public static readonly Color Fondo = Color.FromArgb(244, 244, 245);
         public static readonly Color Blanco = Color.White;
-        public static readonly Color Borde = Color.FromArgb(223, 227, 232);
-        public static readonly Color TextoPrimario = Color.FromArgb(32, 38, 45);
-        public static readonly Color TextoSecundario = Color.FromArgb(110, 118, 128);
+        public static readonly Color Borde = Color.FromArgb(221, 222, 225);
+        public static readonly Color TextoPrimario = Color.FromArgb(28, 28, 30);
+        public static readonly Color TextoSecundario = Color.FromArgb(108, 110, 115);
 
-        public static readonly Color GridLinea = Color.FromArgb(235, 238, 241);
-        public static readonly Color GridFilaAlt = Color.FromArgb(249, 250, 251);
+        public static readonly Color GridLinea = Color.FromArgb(234, 235, 237);
+        public static readonly Color GridFilaAlt = Color.FromArgb(249, 249, 250);
         public static readonly Color GridSeleccion = AcentoSuave;
+        public static readonly Color BotonSecundarioHover = Color.FromArgb(242, 242, 243);
+        public static readonly Color FondoImagen = Color.FromArgb(238, 238, 240);
 
         // --- Fuentes ---
         public static Font FuenteBase => new Font("Segoe UI", 9.75F);
@@ -87,7 +90,7 @@ namespace RefaccionariaApp.Forms
             b.FlatStyle = FlatStyle.Flat;
             b.FlatAppearance.BorderColor = Borde;
             b.FlatAppearance.BorderSize = 1;
-            b.FlatAppearance.MouseOverBackColor = Color.FromArgb(244, 245, 247);
+            b.FlatAppearance.MouseOverBackColor = BotonSecundarioHover;
             b.BackColor = Blanco;
             b.ForeColor = TextoPrimario;
             b.Font = new Font("Segoe UI", 9.5F);

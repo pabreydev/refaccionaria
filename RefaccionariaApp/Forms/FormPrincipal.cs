@@ -97,7 +97,33 @@ namespace RefaccionariaApp.Forms
             AgregarSeccion("REPORTES");
             AgregarBotonNav("Existencias", () => new FormReporteExistencias());
 
+            // ---------- Salir (fijo al fondo de la barra lateral) ----------
+            var btnSalir = new Button
+            {
+                Text = "Salir",
+                Dock = DockStyle.Bottom,
+                Height = 46,
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Tema.SidebarTexto,
+                BackColor = Tema.SidebarFondo,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI", 10F),
+                Cursor = Cursors.Hand,
+                Padding = new Padding(20, 0, 0, 0)
+            };
+            btnSalir.FlatAppearance.BorderSize = 0;
+            btnSalir.FlatAppearance.MouseOverBackColor = Tema.Acento;
+            btnSalir.Click += (s, e) =>
+            {
+                if (MessageBox.Show("¿Deseas salir de la aplicación?", "Salir",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    Close();
+            };
+            var separadorSalir = new Panel { Dock = DockStyle.Bottom, Height = 1, BackColor = Tema.SidebarHover };
+
             sidebar.Controls.Add(flpNav);
+            sidebar.Controls.Add(btnSalir);
+            sidebar.Controls.Add(separadorSalir);
             sidebar.Controls.Add(panelLogo);
             sidebar.Controls.Add(picLogo);
 
