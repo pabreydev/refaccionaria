@@ -23,8 +23,9 @@ base de datos `Refaccionaria` (SQL Server) creada por `script.sql`.
 4. Edita `RefaccionariaApp/Data/ConexionBD.cs` y ajusta el `Data Source`
    (nombre de tu servidor/instancia de SQL Server) si no usas
    `.\SQLEXPRESS`.
-5. Compila y ejecuta (F5). Restaura el paquete NuGet
-   `Microsoft.Data.SqlClient` automáticamente al compilar.
+5. Compila y ejecuta (F5). Restaura los paquetes NuGet
+   `Microsoft.Data.SqlClient` y `QuestPDF` (PDF de cotizaciones, licencia
+   Community) automáticamente al compilar.
 
 ## Estructura del proyecto
 
@@ -50,8 +51,10 @@ RefaccionariaApp/
     FormPartes.cs             Listado de refacciones (búsqueda en servidor) + FormParteEdicion.cs
     FormEquivalencias.cs      Refacciones equivalentes de una parte
     FormCotizaciones.cs       Listado maestro-detalle + buscador incremental
-    FormCotizacionNueva.cs    Modal de alta/edición de una cotización con su detalle
+    FormCotizacionNueva.cs    Modal de alta/edición de una cotización con su detalle y botón Generar PDF
     FormReporteExistencias.cs
+  Reportes/
+    CotizacionPdf.cs          PDF de una cotización (QuestPDF)
 sql/
   correcciones_recomendadas.sql
 ```
