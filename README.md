@@ -55,6 +55,7 @@ RefaccionariaApp/
     FormReporteExistencias.cs
   Reportes/
     CotizacionPdf.cs          PDF de una cotización (QuestPDF)
+    ExistenciasExcel.cs       Excel del reporte de existencias (ClosedXML)
 sql/
   correcciones_recomendadas.sql
 ```

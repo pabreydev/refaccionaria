@@ -102,6 +102,12 @@ namespace RefaccionariaApp.Forms
         public DataTable Datos => vista?.Table;
 
         /// <summary>
+        /// Copia de todos los registros (de todas las páginas) con el filtro y el
+        /// orden actuales, o null. Útil para exportar.
+        /// </summary>
+        public DataTable DatosVisibles => vista?.ToTable();
+
+        /// <summary>
         /// Filtro con la sintaxis de <see cref="DataView.RowFilter"/>, aplicado
         /// sobre todos los registros. Al cambiarlo se regresa a la primera página.
         /// </summary>

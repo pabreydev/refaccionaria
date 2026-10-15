@@ -47,11 +47,11 @@ namespace RefaccionariaApp.Forms
                 Padding = new Padding(12, 0, 12, 10),
                 BackColor = Tema.Blanco
             };
-            _cmbMarca = AgregarFiltro(panelFiltros, "Marca");
-            _cmbModelo = AgregarFiltro(panelFiltros, "Modelo");
-            _cmbVersion = AgregarFiltro(panelFiltros, "Versión");
-            _cmbAnio = AgregarFiltro(panelFiltros, "Año");
-            _cmbCategoria = AgregarFiltro(panelFiltros, "Categoría");
+            _cmbMarca = FiltrosCombo.Agregar(panelFiltros, "Marca");
+            _cmbModelo = FiltrosCombo.Agregar(panelFiltros, "Modelo");
+            _cmbVersion = FiltrosCombo.Agregar(panelFiltros, "Versión");
+            _cmbAnio = FiltrosCombo.Agregar(panelFiltros, "Año");
+            _cmbCategoria = FiltrosCombo.Agregar(panelFiltros, "Categoría");
 
             var btnFiltrar = new Button { Text = "Filtrar", Width = 100, Margin = new Padding(0, 18, 8, 0) };
             var btnLimpiar = new Button { Text = "Limpiar", Width = 90, Margin = new Padding(0, 18, 0, 0) };
@@ -76,24 +76,6 @@ namespace RefaccionariaApp.Forms
             Load += (s, e) => CargarCombosFiltro();
         }
 
-        private static ComboBox AgregarFiltro(FlowLayoutPanel panel, string etiqueta)
-        {
-            var contenedor = new Panel { Width = 150, Height = 46, Margin = new Padding(0, 0, 10, 0) };
-            var cmb = new ComboBox { Dock = DockStyle.Top, DropDownStyle = ComboBoxStyle.DropDownList };
-            var lbl = new Label
-            {
-                Text = etiqueta,
-                Dock = DockStyle.Top,
-                Height = 18,
-                ForeColor = Tema.TextoSecundario,
-                Font = new Font("Segoe UI", 8.5F)
-            };
-            contenedor.Controls.Add(cmb);
-            contenedor.Controls.Add(lbl);
-            panel.Controls.Add(contenedor);
-            return cmb;
-        }
-
         // ---------- Carga de combos ----------
 
         private void CargarCombosFiltro()
@@ -101,9 +83,9 @@ namespace RefaccionariaApp.Forms
             try
             {
                 _cargandoCombos = true;
-                CargarCombo(_cmbMarca, Opciones(BD.EjecutarConsulta("spMarcaMostrar"), "id_marca", "nombre", "(Todas)"));
-                CargarCombo(_cmbAnio, Opciones(BD.EjecutarConsulta("spAnioMostrar"), "id_anio", "nombre", "(Todos)"));
-                CargarCombo(_cmbCategoria, Opciones(BD.EjecutarConsulta("spTipoRefaCatMostrar"), "id_tipoRefaCat", "nombre", "(Todas)"));
+                FiltrosCombo.Cargar(_cmbMarca, FiltrosCombo.Opciones(BD.EjecutarConsulta("spMarcaMostrar"), "id_marca", "nombre", "(Todas)"));
+                FiltrosCombo.Cargar(_cmbAnio, FiltrosCombo.Opciones(BD.EjecutarConsulta("spAnioMostrar"), "id_anio", "nombre", "(Todos)"));
+                FiltrosCombo.Cargar(_cmbCategoria, FiltrosCombo.Opciones(BD.EjecutarConsulta("spTipoRefaCatMostrar"), "id_tipoRefaCat", "nombre", "(Todas)"));
             }
             catch (Exception ex)
             {
@@ -122,13 +104,13 @@ namespace RefaccionariaApp.Forms
             try
             {
                 _cargandoCombos = true;
-                var marca = IdDeCombo(_cmbMarca);
+                var marca = FiltrosCombo.IdDe(_cmbMarca);
                 var dt = marca == null
-                    ? Opciones(BD.EjecutarConsulta("spModeloMostrar"), "id_modelo", "nombre", "(Todos)")
-                    : Opciones(BD.EjecutarConsulta("sp_ObtenerModelos",
+                    ? FiltrosCombo.Opciones(BD.EjecutarConsulta("spModeloMostrar"), "id_modelo", "nombre", "(Todos)")
+                    : FiltrosCombo.Opciones(BD.EjecutarConsulta("sp_ObtenerModelos",
                           new SqlParameter("@IdMarca", marca.Value),
                           new SqlParameter("@IdModelo", DBNull.Value)), "id_modelo", "modelo", "(Todos)");
-                CargarCombo(_cmbModelo, dt);
+                FiltrosCombo.Cargar(_cmbModelo, dt);
             }
             catch (Exception ex)
             {
@@ -150,12 +132,12 @@ namespace RefaccionariaApp.Forms
             try
             {
                 _cargandoCombos = true;
-                var modelo = IdDeCombo(_cmbModelo);
+                var modelo = FiltrosCombo.IdDe(_cmbModelo);
                 var dt = modelo == null
-                    ? Opciones(BD.EjecutarConsulta("spVersionMostrar"), "version_id", "nombre", "(Todas)", nombresUnicos: true)
-                    : Opciones(BD.EjecutarConsulta("sp_ObtenerVersiones",
+                    ? FiltrosCombo.Opciones(BD.EjecutarConsulta("spVersionMostrar"), "version_id", "nombre", "(Todas)", nombresUnicos: true)
+                    : FiltrosCombo.Opciones(BD.EjecutarConsulta("sp_ObtenerVersiones",
                           new SqlParameter("@IdModelo", modelo.Value)), "version_id", "nombre", "(Todas)");
-                CargarCombo(_cmbVersion, dt);
+                FiltrosCombo.Cargar(_cmbVersion, dt);
             }
             catch (Exception ex)
             {
@@ -167,50 +149,15 @@ namespace RefaccionariaApp.Forms
             }
         }
 
-        /// <summary>
-        /// Normaliza el resultado de un SP a columnas (id, nombre) con una primera
-        /// opción "(Todas)" de id nulo.
-        /// </summary>
-        private static DataTable Opciones(DataTable origen, string colId, string colNombre, string textoTodos, bool nombresUnicos = false)
-        {
-            var dt = new DataTable();
-            dt.Columns.Add("id", typeof(int));
-            dt.Columns.Add("nombre", typeof(string));
-            dt.Rows.Add(DBNull.Value, textoTodos);
-
-            var vistos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (DataRow r in origen.Rows)
-            {
-                if (r[colNombre] == DBNull.Value) continue;
-                var nombre = r[colNombre].ToString();
-                if (nombresUnicos && !vistos.Add(nombre)) continue;
-                dt.Rows.Add(r[colId], nombre);
-            }
-            return dt;
-        }
-
-        private static void CargarCombo(ComboBox cmb, DataTable dt)
-        {
-            cmb.DisplayMember = "nombre";
-            cmb.ValueMember = "id";
-            cmb.DataSource = dt;
-            cmb.SelectedIndex = 0;
-        }
-
-        private static int? IdDeCombo(ComboBox cmb) => cmb.SelectedValue is int v ? v : (int?)null;
-
-        /// <summary>Nombre seleccionado, o null si está en "(Todas)".</summary>
-        private static string NombreDeCombo(ComboBox cmb) => cmb.SelectedIndex > 0 ? cmb.Text : null;
-
         // ---------- Aplicar / limpiar ----------
 
         private void AplicarFiltros()
         {
-            _fMarca = NombreDeCombo(_cmbMarca);
-            _fModelo = NombreDeCombo(_cmbModelo);
-            _fVersion = NombreDeCombo(_cmbVersion);
-            _fAnio = NombreDeCombo(_cmbAnio);
-            _fCategoria = NombreDeCombo(_cmbCategoria);
+            _fMarca = FiltrosCombo.NombreDe(_cmbMarca);
+            _fModelo = FiltrosCombo.NombreDe(_cmbModelo);
+            _fVersion = FiltrosCombo.NombreDe(_cmbVersion);
+            _fAnio = FiltrosCombo.NombreDe(_cmbAnio);
+            _fCategoria = FiltrosCombo.NombreDe(_cmbCategoria);
             RecargarSeguro();
         }
 
