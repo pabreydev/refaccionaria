@@ -1,6 +1,7 @@
 using System;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
 using RefaccionariaApp.Data;
@@ -8,17 +9,16 @@ using RefaccionariaApp.Data;
 namespace RefaccionariaApp.Forms
 {
     /// <summary>
-    /// Listado maestro-detalle de cotizaciones con buscador incremental (por
-    /// cliente o folio). El alta y la edición se hacen en el modal
-    /// <see cref="FormCotizacionNueva"/>.
+    /// Listado de cotizaciones con buscador incremental (por cliente o folio) y
+    /// filtro por rango de fechas. El detalle se consulta, da de alta y edita en
+    /// el modal <see cref="FormCotizacionNueva"/>.
     /// </summary>
     public class FormCotizaciones : Form
     {
         private readonly DataGridView dgvCotizaciones = new() { Dock = DockStyle.Fill, ReadOnly = true, AllowUserToAddRows = false, SelectionMode = DataGridViewSelectionMode.FullRowSelect, MultiSelect = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
-        private readonly DataGridView dgvDetalle = new() { Dock = DockStyle.Fill, ReadOnly = true, AllowUserToAddRows = false, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
         private readonly Paginador pagCotizaciones;
-        private readonly Paginador pagDetalle;
-        private readonly TextBox txtBuscar = new() { Left = 70, Top = 11, Width = 300 };
+        private readonly TextBox txtBuscar = new();
+        private readonly DateTimePicker dtpDesde = new(), dtpHasta = new();
 
         public FormCotizaciones()
         {
@@ -30,15 +30,36 @@ namespace RefaccionariaApp.Forms
             BackColor = Tema.Blanco;
 
             Tema.EstilizarGrid(dgvCotizaciones);
-            Tema.EstilizarGrid(dgvDetalle);
             pagCotizaciones = new Paginador(dgvCotizaciones);
-            pagDetalle = new Paginador(dgvDetalle, 25);
 
-            var panelSuperior = new Panel { Dock = DockStyle.Top, Height = 56, Padding = new Padding(12), BackColor = Tema.Blanco };
-            txtBuscar.Left = 12; txtBuscar.Top = 14; txtBuscar.Width = 360;
+            var panelSuperior = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                WrapContents = true,
+                Padding = new Padding(12, 10, 12, 10),
+                BackColor = Tema.Blanco
+            };
             Tema.EstilizarBuscador(txtBuscar, "Buscar por cliente o folio...");
             txtBuscar.TextChanged += (s, e) => AplicarFiltro();
-            panelSuperior.Controls.Add(txtBuscar);
+            FiltrosCombo.AgregarConEtiqueta(panelSuperior, "Buscar", txtBuscar, ancho: 300);
+
+            // Rango de fechas: la casilla de cada selector activa ese límite.
+            foreach (var dtp in new[] { dtpDesde, dtpHasta })
+            {
+                dtp.Format = DateTimePickerFormat.Short;
+                dtp.ShowCheckBox = true;
+                dtp.Checked = false;
+                dtp.ValueChanged += (s, e) => AplicarFiltro();
+            }
+            FiltrosCombo.AgregarConEtiqueta(panelSuperior, "Fecha desde", dtpDesde, ancho: 140);
+            FiltrosCombo.AgregarConEtiqueta(panelSuperior, "Fecha hasta", dtpHasta, ancho: 140);
+
+            var btnLimpiar = new Button { Text = "Limpiar", Width = 90, Margin = new Padding(0, 18, 0, 0) };
+            Tema.BotonSecundario(btnLimpiar);
+            btnLimpiar.Click += (s, e) => LimpiarFiltros();
+            panelSuperior.Controls.Add(btnLimpiar);
 
             var panelInferior = new Panel { Dock = DockStyle.Bottom, Height = 56, Padding = new Padding(12, 0, 12, 0), BackColor = Tema.Blanco };
             var btnNueva = new Button { Text = "+ Nueva cotización", Left = 12, Top = 11, Width = 160 };
@@ -54,19 +75,11 @@ namespace RefaccionariaApp.Forms
             panelInferior.Controls.Add(btnEditar);
             panelInferior.Controls.Add(btnEliminar);
 
-            var splitPrincipal = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, SplitterDistance = 320 };
-            splitPrincipal.Panel1.Controls.Add(dgvCotizaciones);
-            splitPrincipal.Panel1.Controls.Add(pagCotizaciones);
-            var lblDetalle = new Label { Text = "Detalle de la cotización seleccionada:", Dock = DockStyle.Top, Height = 26, Padding = new Padding(5, 6, 0, 0), ForeColor = Tema.TextoSecundario, BackColor = Tema.Blanco };
-            splitPrincipal.Panel2.Controls.Add(dgvDetalle);
-            splitPrincipal.Panel2.Controls.Add(pagDetalle);
-            splitPrincipal.Panel2.Controls.Add(lblDetalle);
-
-            Controls.Add(splitPrincipal);
+            Controls.Add(dgvCotizaciones);
+            Controls.Add(pagCotizaciones);
             Controls.Add(panelInferior);
             Controls.Add(panelSuperior);
 
-            dgvCotizaciones.SelectionChanged += (s, e) => CargarDetalle();
             dgvCotizaciones.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0) EditarSeleccionada(); };
 
             Load += (s, e) => CargarTodas(conservarPagina: false);
@@ -78,20 +91,35 @@ namespace RefaccionariaApp.Forms
             pagCotizaciones.Cargar(BD.EjecutarConsulta("spCotizacionesConsulta"), conservarPagina);
         }
 
+        /// <summary>Combina el texto del buscador con el rango de fechas activo.</summary>
         private void AplicarFiltro()
         {
             if (pagCotizaciones.Datos == null) return;
+
+            var condiciones = new List<string>();
             var texto = txtBuscar.Text.Trim().Replace("'", "''");
-            pagCotizaciones.Filtro = string.IsNullOrEmpty(texto)
-                ? null
-                : $"cliente LIKE '%{texto}%' OR CONVERT(folio, 'System.String') LIKE '%{texto}%'";
+            if (!string.IsNullOrEmpty(texto))
+                condiciones.Add($"(cliente LIKE '%{texto}%' OR CONVERT(folio, 'System.String') LIKE '%{texto}%')");
+
+            // fecha es datetime: "hasta" incluye todo ese día (< día siguiente).
+            if (dtpDesde.Checked)
+                condiciones.Add($"fecha >= #{FechaFiltro(dtpDesde.Value.Date)}#");
+            if (dtpHasta.Checked)
+                condiciones.Add($"fecha < #{FechaFiltro(dtpHasta.Value.Date.AddDays(1))}#");
+
+            pagCotizaciones.Filtro = condiciones.Count == 0 ? null : string.Join(" AND ", condiciones);
         }
 
-        private void CargarDetalle()
+        /// <summary>Fecha en el formato invariable que espera DataView.RowFilter.</summary>
+        private static string FechaFiltro(DateTime fecha) =>
+            fecha.ToString("MM/dd/yyyy", CultureInfo.InvariantCulture);
+
+        private void LimpiarFiltros()
         {
-            if (dgvCotizaciones.CurrentRow?.DataBoundItem is not DataRowView drv) { pagDetalle.Cargar(null); return; }
-            var folio = Convert.ToInt32(drv["folio"]);
-            pagDetalle.Cargar(BD.EjecutarConsulta("spCotizacionDetalleMostrar", new SqlParameter("@folio_cotizacion", folio)));
+            txtBuscar.Clear();
+            dtpDesde.Checked = false;
+            dtpHasta.Checked = false;
+            AplicarFiltro();
         }
 
         private int? FolioSeleccionado()

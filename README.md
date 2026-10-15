@@ -51,7 +51,7 @@ RefaccionariaApp/
     FormVersiones.cs          Depende de Modelo   + FormVersionEdicion.cs
     FormPartes.cs             Listado de refacciones (búsqueda en servidor) + FormParteEdicion.cs
     FormEquivalencias.cs      Refacciones equivalentes de una parte
-    FormCotizaciones.cs       Listado maestro-detalle + buscador incremental
+    FormCotizaciones.cs       Listado + buscador incremental y filtro por fechas
     FormCotizacionNueva.cs    Modal de alta/edición de una cotización con su detalle y botón Generar PDF
     FormReporteExistencias.cs Reporte con filtros y exportación a Excel
     FormRespaldo.cs           Respaldo de la base de datos (menú Herramientas)
@@ -83,9 +83,9 @@ Para agregar una entidad nueva se definen dos clases pequeñas: una `: FormLista
 controles, cómo cargar el registro y cómo guardar). Ejemplo mínimo: `FormMarcas` +
 `FormMarcaEdicion`.
 
-**Cotizaciones** no usa estas bases porque es maestro-detalle (dos grids), pero
-sigue el mismo patrón a mano: buscador incremental, botón Editar y el alta/edición
-en el modal `FormCotizacionNueva`.
+**Cotizaciones** no usa estas bases (tiene filtro por fechas y su alta/edición
+es maestro-detalle), pero sigue el mismo patrón a mano: buscador incremental,
+botón Editar y el alta/edición con su detalle en el modal `FormCotizacionNueva`.
 
 ## Qué usa cada pantalla
 
