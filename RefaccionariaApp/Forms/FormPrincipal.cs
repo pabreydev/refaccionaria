@@ -83,6 +83,9 @@ namespace RefaccionariaApp.Forms
             AgregarSeccion("REPORTES");
             AgregarBotonNav("Existencias", () => new FormReporteExistencias());
 
+            AgregarSeccion("HERRAMIENTAS");
+            AgregarBotonNav("Respaldo de BD", () => new FormRespaldo());
+
             sidebar.Controls.Add(flpNav);
             sidebar.Controls.Add(picLogo);
 

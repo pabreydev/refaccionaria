@@ -35,6 +35,7 @@ RefaccionariaApp/
   Data/
     ConexionBD.cs             Cadena de conexión
     BD.cs                     Helper genérico para llamar SPs / SQL directo
+    RespaldoBD.cs             Respaldo completo (BACKUP DATABASE) verificado
   Forms/
     FormPrincipal.cs          Shell: barra lateral oscura + contenido embebido
     Tema.cs                   Paleta y helpers de estilo (acento rojo del logo, grids/botones planos)
@@ -52,7 +53,9 @@ RefaccionariaApp/
     FormEquivalencias.cs      Refacciones equivalentes de una parte
     FormCotizaciones.cs       Listado maestro-detalle + buscador incremental
     FormCotizacionNueva.cs    Modal de alta/edición de una cotización con su detalle y botón Generar PDF
-    FormReporteExistencias.cs
+    FormReporteExistencias.cs Reporte con filtros y exportación a Excel
+    FormRespaldo.cs           Respaldo de la base de datos (menú Herramientas)
+    FiltrosCombo.cs           Helpers de combos de filtro (Partes y Existencias)
   Reportes/
     CotizacionPdf.cs          PDF de una cotización (QuestPDF)
     ExistenciasExcel.cs       Excel del reporte de existencias (ClosedXML)
