@@ -31,20 +31,6 @@ namespace RefaccionariaApp.Forms
             // ---------- Barra lateral ----------
             var sidebar = new Panel { Dock = DockStyle.Left, Width = 236, BackColor = Tema.SidebarFondo };
 
-            var panelLogo = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = Tema.SidebarFondo };
-            var lblLogo = new Label
-            {
-                Text = "MANGUERAS Y REFACCIONES",
-                Dock = DockStyle.Fill,
-                ForeColor = Tema.Blanco,
-                Font = new Font("Segoe UI Semibold", 13F),
-                TextAlign = ContentAlignment.MiddleCenter,
-                Padding = new Padding(20, 0, 0, 0)
-            };
-            var barraAcento = new Panel { Dock = DockStyle.Left, Width = 5, BackColor = Tema.Acento };
-            panelLogo.Controls.Add(lblLogo);
-            panelLogo.Controls.Add(barraAcento);
-
             // ---------- Logo (imagen) ----------
             var picLogo = new PictureBox
             {
@@ -66,7 +52,7 @@ namespace RefaccionariaApp.Forms
                         picLogo.Image = new Bitmap(img);
                 }
             }
-            catch { /* si falla la imagen, el shell sigue funcionando con el texto */ }
+            catch { /* si falla la imagen, el shell sigue funcionando sin logo */ }
 
 
 
@@ -97,34 +83,7 @@ namespace RefaccionariaApp.Forms
             AgregarSeccion("REPORTES");
             AgregarBotonNav("Existencias", () => new FormReporteExistencias());
 
-            // ---------- Salir (fijo al fondo de la barra lateral) ----------
-            var btnSalir = new Button
-            {
-                Text = "Salir",
-                Dock = DockStyle.Bottom,
-                Height = 46,
-                FlatStyle = FlatStyle.Flat,
-                ForeColor = Tema.SidebarTexto,
-                BackColor = Tema.SidebarFondo,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Font = new Font("Segoe UI", 10F),
-                Cursor = Cursors.Hand,
-                Padding = new Padding(20, 0, 0, 0)
-            };
-            btnSalir.FlatAppearance.BorderSize = 0;
-            btnSalir.FlatAppearance.MouseOverBackColor = Tema.Acento;
-            btnSalir.Click += (s, e) =>
-            {
-                if (MessageBox.Show("¿Deseas salir de la aplicación?", "Salir",
-                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                    Close();
-            };
-            var separadorSalir = new Panel { Dock = DockStyle.Bottom, Height = 1, BackColor = Tema.SidebarHover };
-
             sidebar.Controls.Add(flpNav);
-            sidebar.Controls.Add(btnSalir);
-            sidebar.Controls.Add(separadorSalir);
-            sidebar.Controls.Add(panelLogo);
             sidebar.Controls.Add(picLogo);
 
             // ---------- Contenido ----------
@@ -140,7 +99,22 @@ namespace RefaccionariaApp.Forms
                 Padding = new Padding(24, 0, 0, 0)
             };
             var separador = new Panel { Dock = DockStyle.Bottom, Height = 1, BackColor = Tema.Borde };
+
+            // ---------- Salir (esquina superior derecha) ----------
+            // El panel con padding centra verticalmente el botón en el encabezado.
+            var panelSalir = new Panel { Dock = DockStyle.Right, Width = 124, Padding = new Padding(0, 15, 24, 14) };
+            var btnSalir = new Button { Text = "Salir", Dock = DockStyle.Fill };
+            Tema.BotonSecundario(btnSalir);
+            btnSalir.Click += (s, e) =>
+            {
+                if (MessageBox.Show("¿Deseas salir de la aplicación?", "Salir",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    Close();
+            };
+            panelSalir.Controls.Add(btnSalir);
+
             header.Controls.Add(lblTitulo);
+            header.Controls.Add(panelSalir);
             header.Controls.Add(separador);
 
             panelHost = new Panel { Dock = DockStyle.Fill, BackColor = Tema.Fondo, Padding = new Padding(16) };
