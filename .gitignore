@@ -427,3 +427,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Instalador (se generan con instalador/generar_instalador.ps1)
+instalador/publish/
+instalador/salida/

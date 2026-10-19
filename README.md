@@ -22,18 +22,52 @@ base de datos `Refaccionaria` (SQL Server) creada por `script.sql`.
 3. Abre `RefaccionariaApp.sln` en Visual Studio.
 4. Edita `RefaccionariaApp/Data/ConexionBD.cs` y ajusta el `Data Source`
    (nombre de tu servidor/instancia de SQL Server) si no usas
-   `.\SQLEXPRESS`.
+   `.\SQLEXPRESS`. (En una PC instalada, la cadena se lee de `conexion.txt`
+   junto al ejecutable.)
 5. Compila y ejecuta (F5). Restaura los paquetes NuGet
-   `Microsoft.Data.SqlClient` y `QuestPDF` (PDF de cotizaciones, licencia
-   Community) automáticamente al compilar.
+   `Microsoft.Data.SqlClient`, `QuestPDF` (PDF de cotizaciones, licencia
+   Community) y `ClosedXML` (Excel) automáticamente al compilar.
+
+## Instalador
+
+Para instalar en otra PC se genera un solo `.exe` que instala la aplicación
+**y** la base de datos.
+
+**Generarlo** (requiere Inno Setup 6: `winget install JRSoftware.InnoSetup`):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File instalador\generar_instalador.ps1 -Version 1.0.0
+```
+
+El resultado queda en `instalador\salida\Instalador_Refaccionaria_<versión>.exe`.
+
+**Qué hace al instalar** (requiere permisos de administrador):
+
+1. Pide el servidor de SQL Server (por defecto `.\SQLEXPRESS`). Si es esa
+   instancia local y no existe, descarga **SQL Server 2025 Express** de
+   Microsoft y lo instala en silencio (necesita internet; tarda varios minutos).
+2. Copia la aplicación en `Archivos de programa\Refaccionaria`. Va publicada
+   *self-contained*: no hace falta instalar .NET.
+3. Crea la base `Refaccionaria` con `script.sql`, aplica
+   `correcciones_recomendadas.sql`, carga el catálogo de `seed_catalogo.sql`
+   y ejecuta `permisos_usuarios.sql`, que da acceso a todos los usuarios de
+   Windows de la PC (grupo local *Usuarios*: `db_owner` en la base y
+   `CREATE ANY DATABASE`, que SQL Server exige para verificar los respaldos).
+   Todos los scripts se pueden correr varias veces: **reinstalar o actualizar
+   conserva los datos**. El detalle queda en `instalacion_bd.log`, en la
+   carpeta de la app.
+4. Escribe `conexion.txt` con la cadena de conexión.
+
+Al desinstalar se quita la aplicación, pero **la base de datos se conserva**.
 
 ## Estructura del proyecto
 
 ```
 RefaccionariaApp/
-  Program.cs                 Punto de entrada
+  Program.cs                 Punto de entrada (y modo --instalar-bd del instalador)
   Data/
-    ConexionBD.cs             Cadena de conexión
+    ConexionBD.cs             Cadena de conexión (conexion.txt o la de por defecto)
+    InstaladorBD.cs           Crea/actualiza la BD con los scripts de sql/
     BD.cs                     Helper genérico para llamar SPs / SQL directo
     RespaldoBD.cs             Respaldo completo (BACKUP DATABASE) verificado
   Forms/
@@ -60,7 +94,13 @@ RefaccionariaApp/
     CotizacionPdf.cs          PDF de una cotización (QuestPDF)
     ExistenciasExcel.cs       Excel del reporte de existencias (ClosedXML)
 sql/
+  script.sql                  Estructura y procedimientos almacenados
   correcciones_recomendadas.sql
+  seed_catalogo.sql           Catálogo: años, marcas, modelos, versiones, categorías
+  permisos_usuarios.sql       Acceso de los usuarios de Windows (lo usa el instalador)
+instalador/
+  Refaccionaria.iss           Script de Inno Setup
+  generar_instalador.ps1      Publica la app y compila el instalador
 ```
 
 ## Patrón de las pantallas de entidad

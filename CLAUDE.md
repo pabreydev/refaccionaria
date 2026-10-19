@@ -12,8 +12,14 @@ va lo que hace falta para trabajar en el código.
 - Compilar: `dotnet build RefaccionariaApp/RefaccionariaApp.csproj`. Si la app
   está abierta, el build falla al copiar `RefaccionariaApp.exe` (MSB3021); para
   solo verificar el código compila con `-o <carpeta temporal>`.
-- Cadena de conexión en `RefaccionariaApp/Data/ConexionBD.cs` (cambia según la
-  PC; no subir cambios de servidor por accidente).
+- Cadena de conexión: `conexion.txt` junto al ejecutable (lo escribe el
+  instalador); si no existe se usa la de `RefaccionariaApp/Data/ConexionBD.cs`
+  (cambia según la PC; no subir cambios de servidor por accidente).
+- Instalador: `instalador/generar_instalador.ps1` (publica self-contained y
+  compila `Refaccionaria.iss` con Inno Setup 6). La BD la crea
+  `RefaccionariaApp.exe --instalar-bd` con los scripts de `sql/`
+  (`Data/InstaladorBD.cs`); esos scripts deben poder correrse varias veces.
+  `.iss` y `.ps1` van en UTF-8 **con BOM** (si no, se rompen los acentos).
 
 ## Arquitectura y convenciones de código
 
