@@ -30,82 +30,94 @@ namespace RefaccionariaApp.Forms
         public FormParteEdicion(DataRowView fila) : base("Partes (refacciones)", fila)
         {
             Width = 920;
-            Height = 520;
+            Height = 560;
 
-            panelCampos.Controls.Add(new Label { Text = "Núm. de parte:", Left = 10, Top = 12, Width = 100 });
-            txtNumParte = new TextBox { Left = 115, Top = 9, Width = 150 };
-            panelCampos.Controls.Add(txtNumParte);
+            // Rejilla de 3 pares etiqueta/campo: las etiquetas toman el ancho de su
+            // texto con la fuente del tema y los campos se reparten el resto, así
+            // nada se corta ni se empalma (con posiciones fijas sí pasaba).
+            var tabla = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 6, RowCount = 7 };
+            for (int i = 0; i < 3; i++)
+            {
+                tabla.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+                tabla.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+            }
+            for (int i = 0; i < 6; i++)
+                tabla.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            tabla.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            panelCampos.Controls.Add(tabla);
 
-            panelCampos.Controls.Add(new Label { Text = "Nombre:", Left = 280, Top = 12, Width = 60 });
-            txtNombre = new TextBox { Left = 345, Top = 9, Width = 250 };
-            panelCampos.Controls.Add(txtNombre);
+            void Agregar(string etiqueta, Control campo, int col, int fila, int columnasCampo = 1)
+            {
+                // En campos altos (descripción, vista previa) la etiqueta va arriba.
+                bool alto = campo is PictureBox || (campo is TextBox t && t.Multiline);
+                tabla.Controls.Add(new Label
+                {
+                    Text = etiqueta,
+                    AutoSize = true,
+                    Anchor = alto ? AnchorStyles.Top | AnchorStyles.Left : AnchorStyles.Left,
+                    Margin = new Padding(col == 0 ? 0 : 12, alto ? 9 : 6, 6, 6)
+                }, col, fila);
+                if (campo.Anchor == (AnchorStyles.Top | AnchorStyles.Left))
+                    campo.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+                campo.Margin = new Padding(0, 6, 0, 6);
+                tabla.Controls.Add(campo, col + 1, fila);
+                tabla.SetColumnSpan(campo, columnasCampo);
+            }
 
-            panelCampos.Controls.Add(new Label { Text = "Categoría:", Left = 10, Top = 42, Width = 100 });
-            cmbCategoria = new ComboBox { Left = 115, Top = 39, Width = 150, DropDownStyle = ComboBoxStyle.DropDownList };
-            panelCampos.Controls.Add(cmbCategoria);
+            ComboBox NuevoCombo() => new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
 
-            panelCampos.Controls.Add(new Label { Text = "Proveedor:", Left = 280, Top = 42, Width = 60 });
-            cmbProveedor = new ComboBox { Left = 345, Top = 39, Width = 250, DropDownStyle = ComboBoxStyle.DropDownList };
-            panelCampos.Controls.Add(cmbProveedor);
+            txtNumParte = new TextBox();
+            txtNombre = new TextBox();
+            Agregar("Núm. de parte:", txtNumParte, 0, 0);
+            Agregar("Nombre:", txtNombre, 2, 0, 3);
 
-            panelCampos.Controls.Add(new Label { Text = "Unidad:", Left = 10, Top = 72, Width = 100 });
-            cmbUnidad = new ComboBox { Left = 115, Top = 69, Width = 150, DropDownStyle = ComboBoxStyle.DropDownList };
-            panelCampos.Controls.Add(cmbUnidad);
+            cmbCategoria = NuevoCombo();
+            cmbProveedor = NuevoCombo();
+            cmbUnidad = NuevoCombo();
+            Agregar("Categoría:", cmbCategoria, 0, 1);
+            Agregar("Proveedor:", cmbProveedor, 2, 1);
+            Agregar("Unidad:", cmbUnidad, 4, 1);
 
-            panelCampos.Controls.Add(new Label { Text = "Costo:", Left = 280, Top = 72, Width = 60 });
-            txtCosto = new TextBox { Left = 345, Top = 69, Width = 90 };
-            panelCampos.Controls.Add(txtCosto);
+            txtCosto = new TextBox();
+            txtPrecio = new TextBox();
+            txtExistencias = new TextBox();
+            Agregar("Costo:", txtCosto, 0, 2);
+            Agregar("Precio:", txtPrecio, 2, 2);
+            Agregar("Existencias:", txtExistencias, 4, 2);
 
-            panelCampos.Controls.Add(new Label { Text = "Precio:", Left = 445, Top = 72, Width = 50 });
-            txtPrecio = new TextBox { Left = 495, Top = 69, Width = 90 };
-            panelCampos.Controls.Add(txtPrecio);
+            cmbMarca = NuevoCombo();
+            cmbModelo = NuevoCombo();
+            cmbVersion = NuevoCombo();
+            Agregar("Marca:", cmbMarca, 0, 3);
+            Agregar("Modelo:", cmbModelo, 2, 3);
+            Agregar("Versión:", cmbVersion, 4, 3);
 
-            panelCampos.Controls.Add(new Label { Text = "Existencias:", Left = 595, Top = 72, Width = 70 });
-            txtExistencias = new TextBox { Left = 665, Top = 69, Width = 80 };
-            panelCampos.Controls.Add(txtExistencias);
-
-            panelCampos.Controls.Add(new Label { Text = "Marca:", Left = 10, Top = 102, Width = 100 });
-            cmbMarca = new ComboBox { Left = 115, Top = 99, Width = 150, DropDownStyle = ComboBoxStyle.DropDownList };
-            panelCampos.Controls.Add(cmbMarca);
-
-            panelCampos.Controls.Add(new Label { Text = "Modelo:", Left = 280, Top = 102, Width = 60 });
-            cmbModelo = new ComboBox { Left = 345, Top = 99, Width = 150, DropDownStyle = ComboBoxStyle.DropDownList };
-            panelCampos.Controls.Add(cmbModelo);
-
-            panelCampos.Controls.Add(new Label { Text = "Versión:", Left = 505, Top = 102, Width = 60 });
-            cmbVersion = new ComboBox { Left = 570, Top = 99, Width = 175, DropDownStyle = ComboBoxStyle.DropDownList };
-            panelCampos.Controls.Add(cmbVersion);
-
-            panelCampos.Controls.Add(new Label { Text = "Imagen:", Left = 10, Top = 132, Width = 100 });
-            txtImgPath = new TextBox { Left = 115, Top = 129, Width = 380, ReadOnly = true };
-            panelCampos.Controls.Add(txtImgPath);
-            var btnExaminar = new Button { Text = "Examinar...", Left = 500, Top = 127, Width = 90 };
+            txtImgPath = new TextBox { ReadOnly = true };
+            Agregar("Imagen:", txtImgPath, 0, 4, 4);
+            var btnExaminar = new Button { Text = "Examinar...", Anchor = AnchorStyles.Left | AnchorStyles.Right, Margin = new Padding(8, 5, 0, 5) };
             Tema.BotonSecundario(btnExaminar);
             btnExaminar.Click += (s, e) => ExaminarImagen();
-            panelCampos.Controls.Add(btnExaminar);
+            tabla.Controls.Add(btnExaminar, 5, 4);
 
-            panelCampos.Controls.Add(new Label { Text = "Descripción:", Left = 10, Top = 162, Width = 100 });
-            txtDescripcion = new TextBox { Left = 115, Top = 159, Width = 770, Height = 50, Multiline = true };
-            panelCampos.Controls.Add(txtDescripcion);
+            txtDescripcion = new TextBox { Multiline = true, Height = 60, ScrollBars = ScrollBars.Vertical };
+            Agregar("Descripción:", txtDescripcion, 0, 5, 5);
 
-            panelCampos.Controls.Add(new Label { Text = "Vista previa:", Left = 10, Top = 222, Width = 100 });
             picImagen = new PictureBox
             {
-                Left = 115,
-                Top = 222,
                 Width = 300,
-                Height = 170,
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left,
                 SizeMode = PictureBoxSizeMode.Zoom,
                 BorderStyle = BorderStyle.FixedSingle,
                 BackColor = SystemColors.ControlLightLight
             };
-            panelCampos.Controls.Add(picImagen);
+            Agregar("Vista previa:", picImagen, 0, 6, 3);
 
             // Las equivalencias requieren una parte ya guardada; solo al editar.
-            btnEquivalencias = new Button { Text = "Equivalencias...", Left = 440, Top = 222, Width = 140, Visible = !EsNuevo };
+            btnEquivalencias = new Button { Text = "Equivalencias...", Width = 140, Anchor = AnchorStyles.Top | AnchorStyles.Left, Margin = new Padding(12, 6, 0, 6), Visible = !EsNuevo };
             Tema.BotonSecundario(btnEquivalencias);
             btnEquivalencias.Click += (s, e) => AbrirEquivalencias();
-            panelCampos.Controls.Add(btnEquivalencias);
+            tabla.Controls.Add(btnEquivalencias, 4, 6);
+            tabla.SetColumnSpan(btnEquivalencias, 2);
 
             cmbMarca.SelectedIndexChanged += (s, e) => { if (!cargandoParaEditar) CargarModelosPorMarca(); };
             cmbModelo.SelectedIndexChanged += (s, e) => { if (!cargandoParaEditar) CargarVersionesPorModelo(); };
