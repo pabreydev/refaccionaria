@@ -10,9 +10,12 @@ namespace RefaccionariaApp.Forms
     ///
     /// Toda la lógica vive en stored procedures:
     ///  - Listado/búsqueda: spPartesMostrar @filtro (una fila por parte; agrega
-    ///    marca/modelo/versión y el año como rango. @filtro NULL = todas).
+    ///    marca/modelo/versión, los rangos de años de sus aplicaciones y el texto
+    ///    completo de las aplicaciones, que solo se ve en el panel de detalle.
+    ///    @filtro NULL = todas).
     ///  - Filtros (Marca, Modelo, Versión, Año, Categoría): spPartesFiltro, que
-    ///    recibe los nombres seleccionados (NULL = sin filtro). Se aplican al
+    ///    recibe los nombres seleccionados (NULL = sin filtro); el año debe caer
+    ///    en el rango de la aplicación de esa misma versión. Se aplican al
     ///    presionar "Filtrar"; el texto del buscador se combina en memoria sobre
     ///    ese resultado (NumParte/Parte, igual que spPartesMostrar).
     ///  - Borrado: spPartesEliminar (borra en cascada RelPartesVersion,
@@ -260,7 +263,7 @@ namespace RefaccionariaApp.Forms
 
         protected override string NombreCampoId => "id_parte";
 
-        protected override string[] ColumnasOcultas => new[] { "id_parte", "Path" };
+        protected override string[] ColumnasOcultas => new[] { "id_parte", "Path", "Aplicaciones" };
 
         protected override FormEdicionBase CrearFormEdicion(DataRowView fila) => new FormParteEdicion(fila);
 

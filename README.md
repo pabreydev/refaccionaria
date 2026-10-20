@@ -143,12 +143,34 @@ en los puntos donde el script no traía el procedimiento necesario:
   `modelo_id`.
 - **Edición de Partes**: `spPartesMostrar`/`spPartesFiltro` solo devuelven
   nombres (Marca, Modelo, Categoría, etc.), no los ids de las llaves
-  foráneas, así que al seleccionar una parte para editar se hace una
-  consulta directa a la tabla `Partes` (y a `RelPartesVersion`) para
-  precargar los combos correctamente.
-- **`spPartesInsertar`** no admite `unidad_id` (solo se agregó a
-  `spPartesModificar`), así que al dar de alta una parte se completa la
-  unidad con un `UPDATE` inmediatamente después del alta.
+  foráneas, así que el modal de edición carga la parte con `spPartePorId` y
+  sus aplicaciones con `spParteAplicacionesMostrar`.
+
+## Aplicaciones de partes (versión + años)
+
+Una parte se liga a los vehículos en que sirve mediante **aplicaciones**: cada
+renglón de `RelPartesVersion` dice "esta parte aplica a esta versión en los
+años `anio_desde`–`anio_hasta`". Así se distinguen piezas que cambian por año
+para la misma versión, por ejemplo:
+
+| Parte          | Versión                | Años      |
+|----------------|------------------------|-----------|
+| Barra cardan A | Grand Cherokee Laredo  | 1999–2002 |
+| Barra cardan B | Grand Cherokee Laredo  | 2003–2004 |
+
+- En el alta/edición de partes se capturan con Marca → Modelo → Versión y
+  Desde/Hasta (los años del modelo según `RelAnioModelo`, vía
+  `sp_ObtenerAnios`). Una parte puede tener varias aplicaciones; para una
+  misma versión los rangos no pueden empalmarse.
+- `spParteAplicacionesGuardar` reemplaza todas las aplicaciones de la parte
+  en una transacción (recibe un arreglo JSON). `spPartesModificar` ya solo
+  actualiza los datos de la parte.
+- `RelAnioModelo` sigue indicando en qué años existe cada modelo; ya no se
+  usa para decidir a qué años aplica una parte.
+- En el listado, la columna **Año** muestra los rangos reales de la parte y el
+  filtro por año solo devuelve partes cuyo rango lo incluye **para esa misma
+  versión**. El texto completo de las aplicaciones aparece en el panel de
+  detalle.
 
 ## ⚠️ Errores encontrados en el script (importante)
 
@@ -187,12 +209,10 @@ datos):
   permiten reasignar la Marca de un Modelo ni el Modelo de una Versión
   una vez creados. Por eso, en las pantallas de Modelos y Versiones el
   combo de la relación se deshabilita al editar.
-- `sp_ObtenerAnios` relaciona `Modelo` y `Año` comparando directamente
-  `id_modelo = id_anio`, lo cual no corresponde con el modelo de datos
-  (la relación real es a través de la tabla `RelAnioModelo`). Por esa
-  razón no se construyó una pantalla de "compatibilidad Año/Modelo/Marca"
-  automática; si me confirmas cómo debe funcionar esa relación, puedo
-  agregarla.
+- `sp_ObtenerAnios` relacionaba `Modelo` y `Año` comparando directamente
+  `id_modelo = id_anio`. Se corrigió en la sección de correcciones de
+  `script.sql`: ahora devuelve los años del modelo a través de
+  `RelAnioModelo`.
 - Hay procedimientos duplicados con distinto nombre para lo mismo (por
   ejemplo `spModeloInsertar` y `sp_ModeloInsertar`, o `spParteBuscar` y
   `sp_ParteBuscar`). La aplicación usa siempre la versión más completa.
