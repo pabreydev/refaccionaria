@@ -4,7 +4,6 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
 using RefaccionariaApp.Data;
@@ -426,11 +425,21 @@ namespace RefaccionariaApp.Forms
             }
 
             // Todas las aplicaciones se reemplazan juntas (en una transacción en el SP).
-            string json = JsonSerializer.Serialize(aplicaciones.Select(a =>
-                new { version_id = a.VersionId, anio_desde = a.Desde, anio_hasta = a.Hasta }));
+            // Se mandan como parámetro tipo tabla (dbo.UDT_ParteAplicacion), no JSON:
+            // OPENJSON no existe en SQL Server 2014.
+            var tabla = new DataTable();
+            tabla.Columns.Add("version_id", typeof(int));
+            tabla.Columns.Add("anio_desde", typeof(int));
+            tabla.Columns.Add("anio_hasta", typeof(int));
+            foreach (var a in aplicaciones)
+                tabla.Rows.Add(a.VersionId, a.Desde, a.Hasta);
             BD.EjecutarNoQuery("spParteAplicacionesGuardar",
                 new SqlParameter("@parte_id", idGuardado.Value),
-                new SqlParameter("@aplicaciones", json));
+                new SqlParameter("@aplicaciones", SqlDbType.Structured)
+                {
+                    TypeName = "dbo.UDT_ParteAplicacion",
+                    Value = tabla
+                });
         }
 
         private static double ParseDouble(string texto, string campo)

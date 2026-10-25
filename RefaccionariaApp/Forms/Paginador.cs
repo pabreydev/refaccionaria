@@ -166,7 +166,7 @@ namespace RefaccionariaApp.Forms
         private void Mostrar()
         {
             int total = TotalRegistros;
-            paginaActual = Math.Clamp(paginaActual, 0, TotalPaginas - 1);
+            paginaActual = Math.Max(0, Math.Min(paginaActual, TotalPaginas - 1));
             int inicio = paginaActual * tamanoPagina;
             int fin = Math.Min(inicio + tamanoPagina, total);
 
@@ -220,8 +220,9 @@ namespace RefaccionariaApp.Forms
 
         private static bool MismoEsquema(DataTable a, DataTable b) =>
             a.Columns.Count == b.Columns.Count &&
-            a.Columns.Cast<DataColumn>().Zip(b.Columns.Cast<DataColumn>())
-             .All(p => p.First.ColumnName == p.Second.ColumnName && p.First.DataType == p.Second.DataType);
+            a.Columns.Cast<DataColumn>().Zip(b.Columns.Cast<DataColumn>(),
+                (x, y) => x.ColumnName == y.ColumnName && x.DataType == y.DataType)
+             .All(igual => igual);
 
         private Button CrearBoton(string texto, Action mover)
         {

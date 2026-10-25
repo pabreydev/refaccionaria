@@ -15,7 +15,7 @@ namespace RefaccionariaApp
             if (args.Length > 0 && args[0] == "--instalar-bd")
                 return InstalarBaseDatos(args);
 
-            Application.SetHighDpiMode(HighDpiMode.SystemAware);
+            // El modo DPI (SystemAware) se declara en app.manifest.
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FormPrincipal());

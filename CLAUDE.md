@@ -6,17 +6,21 @@ va lo que hace falta para trabajar en el código.
 
 ## Proyecto
 
-- App de escritorio **Windows Forms (.NET 8, C#)** para la base de datos
-  `Refaccionaria` en **SQL Server**. Todo el código, la UI y los comentarios
-  están en **español**.
+- App de escritorio **Windows Forms (.NET Framework 4.8, C#)** para la base de
+  datos `Refaccionaria` en **SQL Server**. Todo el código, la UI y los
+  comentarios están en **español**.
+- Debe seguir corriendo en **Windows 7 SP1 (32 bits) con SQL Server 2014**: no
+  usar APIs exclusivas de .NET Core/5+, no subir QuestPDF de 2026.6.0 y no usar
+  T-SQL de 2016+ en `sql/` (detalles en README, "Compatibilidad con Windows 7").
 - Compilar: `dotnet build RefaccionariaApp/RefaccionariaApp.csproj`. Si la app
   está abierta, el build falla al copiar `RefaccionariaApp.exe` (MSB3021); para
   solo verificar el código compila con `-o <carpeta temporal>`.
 - Cadena de conexión: `conexion.txt` junto al ejecutable (lo escribe el
   instalador); si no existe se usa la de `RefaccionariaApp/Data/ConexionBD.cs`
   (cambia según la PC; no subir cambios de servidor por accidente).
-- Instalador: `instalador/generar_instalador.ps1` (publica self-contained y
-  compila `Refaccionaria.iss` con Inno Setup 6). La BD la crea
+- Instalador: `instalador/generar_instalador.ps1` (publica la app y compila
+  `Refaccionaria.iss` con Inno Setup 6; con `-Win7` incluye .NET Framework 4.8
+  y SQL Server 2014 Express). La BD la crea
   `RefaccionariaApp.exe --instalar-bd` con los scripts de `sql/`
   (`Data/InstaladorBD.cs`); esos scripts deben poder correrse varias veces.
   `.iss` y `.ps1` van en UTF-8 **con BOM** (si no, se rompen los acentos).

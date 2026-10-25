@@ -1,15 +1,30 @@
 # Refaccionaria - Proyecto de Windows Forms (C#)
 
-Aplicación de escritorio en C# / Windows Forms (.NET 8) que administra la
-base de datos `Refaccionaria` (SQL Server) creada por `script.sql`.
+Aplicación de escritorio en C# / Windows Forms (.NET Framework 4.8) que
+administra la base de datos `Refaccionaria` (SQL Server) creada por `script.sql`.
+Corre en **Windows 7 SP1 en adelante, de 32 o 64 bits**.
 
 ## Requisitos
 
 - Visual Studio 2022 (o superior) con la carga de trabajo ".NET desktop
-  development".
-- SDK de .NET 8.
-- SQL Server (Express, Developer o similar) con la base de datos
-  `Refaccionaria` ya creada a partir de tu `script.sql`.
+  development", o el SDK de .NET 8 o posterior (compila el proyecto `net48`
+  sin instalar el Developer Pack de .NET Framework).
+- SQL Server **2014 o posterior** (Express, Developer o similar) con la base
+  de datos `Refaccionaria` ya creada a partir de tu `script.sql`.
+
+### Compatibilidad con Windows 7
+
+- **.NET Framework 4.8** en lugar de .NET 8 (que no corre en Windows 7).
+  En código no se pueden usar APIs exclusivas de .NET Core/5+ (por ejemplo
+  `TextBox.PlaceholderText`: se usa `Tema.AsignarPlaceholder`).
+- **QuestPDF fijo en 2026.6.0**: desde 2026.6.1 su DLL nativa importa
+  `GetSystemTimePreciseAsFileTime` (Windows 8+) y no carga en Windows 7.
+  Antes de actualizarlo, revisar eso en `runtimes\win-x86\native`.
+- **Los scripts de `sql/` deben correr en SQL Server 2014**, lo último que se
+  instala en Windows 7: nada de `DROP ... IF EXISTS`, `CREATE OR ALTER`,
+  `STRING_AGG`, `CONCAT_WS`, `OPENJSON` ni `OPTIMIZE_FOR_SEQUENTIAL_KEY`. Se
+  usan `IF OBJECT_ID(...) IS NOT NULL DROP ...`, `STUFF(... FOR XML PATH(''))`
+  y parámetros tipo tabla.
 
 ## Puesta en marcha
 
@@ -37,18 +52,27 @@ Para instalar en otra PC se genera un solo `.exe` que instala la aplicación
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File instalador\generar_instalador.ps1 -Version 1.0.0
+# Para Windows 7 (incluye .NET Framework 4.8 y SQL Server 2014 Express):
+powershell -ExecutionPolicy Bypass -File instalador\generar_instalador.ps1 -Version 1.0.0 -Win7
 ```
 
-El resultado queda en `instalador\salida\Instalador_Refaccionaria_<versión>.exe`.
+El resultado queda en `instalador\salida\Instalador_Refaccionaria_<versión>.exe`
+(o `..._Win7.exe`). El de Windows 7 pesa unos 400 MB más porque Windows 7 sin
+actualizaciones no puede descargar de los servidores de Microsoft (exigen
+TLS 1.2); sus prerrequisitos se descargan una vez a `instalador\prerequisitos`.
+Sirve también en Windows 10/11.
 
 **Qué hace al instalar** (requiere permisos de administrador):
 
-1. Pide el servidor de SQL Server (por defecto `.\SQLEXPRESS`). Si es esa
-   instancia local y no existe, descarga **SQL Server 2025 Express** de
-   Microsoft y lo instala en silencio (necesita internet; tarda varios minutos).
-2. Copia la aplicación en `Archivos de programa\Refaccionaria`. Va publicada
-   *self-contained*: no hace falta instalar .NET.
-3. Crea la base `Refaccionaria` con `script.sql`, aplica
+1. Si falta **.NET Framework 4.8**, lo instala (viene en Windows 10 1903+;
+   el instalador normal lo descarga, el `_Win7` lo trae incluido).
+2. Pide el servidor de SQL Server (por defecto `.\SQLEXPRESS`). Si es esa
+   instancia local y no existe, lo instala en silencio (tarda varios minutos):
+   - Windows 10/11: descarga **SQL Server 2025 Express** de Microsoft.
+   - Windows 7/8/8.1: **SQL Server 2014 Express SP3** (x86, sirve en 32 y
+     64 bits). Solo lo trae el instalador `_Win7`.
+3. Copia la aplicación en `Archivos de programa\Refaccionaria`.
+4. Crea la base `Refaccionaria` con `script.sql`, aplica
    `correcciones_recomendadas.sql`, carga el catálogo de `seed_catalogo.sql`
    y ejecuta `permisos_usuarios.sql`, que da acceso a todos los usuarios de
    Windows de la PC (grupo local *Usuarios*: `db_owner` en la base y
@@ -56,7 +80,7 @@ El resultado queda en `instalador\salida\Instalador_Refaccionaria_<versión>.exe
    Todos los scripts se pueden correr varias veces: **reinstalar o actualizar
    conserva los datos**. El detalle queda en `instalacion_bd.log`, en la
    carpeta de la app.
-4. Escribe `conexion.txt` con la cadena de conexión.
+5. Escribe `conexion.txt` con la cadena de conexión.
 
 Al desinstalar se quita la aplicación, pero **la base de datos se conserva**.
 

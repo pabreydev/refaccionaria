@@ -43,6 +43,13 @@ namespace RefaccionariaApp.Data
             if (!ServidorEsLocal(cn))
             {
                 string carpetaServidor = Escalar(cn, "SELECT CONVERT(NVARCHAR(4000), SERVERPROPERTY('InstanceDefaultBackupPath'))");
+                // SQL Server 2014 no tiene esa propiedad (devuelve NULL): se lee del registro de la instancia.
+                if (string.IsNullOrEmpty(carpetaServidor))
+                    carpetaServidor = Escalar(cn,
+                        @"DECLARE @ruta NVARCHAR(4000);
+                          EXEC master.dbo.xp_instance_regread N'HKEY_LOCAL_MACHINE',
+                               N'Software\Microsoft\MSSQLServer\MSSQLServer', N'BackupDirectory', @ruta OUTPUT;
+                          SELECT @ruta;");
                 string rutaServidor = Path.Combine(carpetaServidor, archivo);
                 RespaldarYVerificar(cn, baseDatos, rutaServidor);
                 return new Resultado { Ruta = rutaServidor, EnServidor = true };

@@ -104,7 +104,6 @@ namespace RefaccionariaApp.Forms
             using var fbd = new FolderBrowserDialog
             {
                 Description = "Carpeta donde se guardarán los respaldos",
-                UseDescriptionForTitle = true,
                 SelectedPath = Directory.Exists(txtCarpeta.Text) ? txtCarpeta.Text : ""
             };
             if (fbd.ShowDialog(this) != DialogResult.OK) return;

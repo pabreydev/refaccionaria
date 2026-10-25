@@ -102,7 +102,22 @@ namespace RefaccionariaApp.Forms
         {
             t.BorderStyle = BorderStyle.FixedSingle;
             t.Font = FuenteBase;
-            t.PlaceholderText = placeholder;
+            AsignarPlaceholder(t, placeholder);
+        }
+
+        // .NET Framework no tiene TextBox.PlaceholderText: se usa el "cue banner"
+        // nativo de Windows (EM_SETCUEBANNER), que es lo mismo que hace .NET 8.
+        private const int EM_SETCUEBANNER = 0x1501;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, string lParam);
+
+        public static void AsignarPlaceholder(TextBox t, string texto)
+        {
+            // wParam = 1: el texto sigue visible mientras el control tiene el foco y está vacío.
+            void Aplicar() => SendMessage(t.Handle, EM_SETCUEBANNER, (IntPtr)1, texto);
+            if (t.IsHandleCreated) Aplicar();
+            t.HandleCreated += (s, e) => Aplicar();
         }
     }
 }

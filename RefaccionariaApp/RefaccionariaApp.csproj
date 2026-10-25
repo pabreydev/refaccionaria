@@ -1,20 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- .NET Framework 4.8 para que corra también en Windows 7 SP1 (.NET 8 no lo soporta).
+       AnyCPU sin Prefer32Bit: corre en 64 bits en Windows de 64 y en 32 bits en Windows de 32;
+       las DLL nativas de QuestPDF y SqlClient se copian para ambas arquitecturas. -->
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
     <Nullable>disable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>RefaccionariaApp</RootNamespace>
     <AssemblyName>RefaccionariaApp</AssemblyName>
     <LangVersion>latest</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Using Include="System.Drawing" />
+    <Using Include="System.Windows.Forms" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.105.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.2" />
-    <PackageReference Include="QuestPDF" Version="2026.9.1" />
+    <!-- No subir de 2026.6.0: desde 2026.6.1 la DLL nativa usa funciones de Windows 8+
+         (GetSystemTimePreciseAsFileTime) y no carga en Windows 7. -->
+    <PackageReference Include="QuestPDF" Version="2026.6.0" />
+    <!-- Permite compilar net48 sin tener instalado el Developer Pack de .NET Framework. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
